@@ -6,86 +6,188 @@ NIM : 18320019
 #include <stdio.h>
 #include <stdlib.h>
 
-int main()
-{
-    printf("Jumlah proses : ");
-    int n;
-    scanf("%d", &n);
-    int waktu_kedatangan[n], waktu_eksekusi[n], waktu_proses[n], sisa_waktu[n], time;
-    printf("Kuantum (ms) : ");
-    int kuantum;
-    scanf("%d", &kuantum);
+int main() {
+    int waktu;
+    int proses;
+    int quantum;
+    printf("Masukkan jumlah proses: ");
+    scanf("%d", &proses);
+    printf("Masukkan kuantum: ");
+    scanf("%d", &quantum);
+    int end = 0;
+
+    int input[proses][3];
     int i;
-    for (i=0; i<n; i++){
-        printf("\nWaktu kedatangan P%d (ms) : ", i);
-        scanf("%d", &waktu_kedatangan[i]);
-        printf("Waktu eksekusi P%d (ms) : ", i);
-        scanf("%d", &waktu_eksekusi[i]);
-        waktu_proses[i] = 0;
-        sisa_waktu[i] = waktu_eksekusi[i];
+    int j;
+
+    int antrian[proses];
+
+    waktu = 0;
+    int nextQuantum = quantum;
+    int currentInput = -1;
+
+    for (i=0; i<proses; i++) {
+            antrian[i] = -1;
     }
-    printf("--------------------------------\n");
-    printf("Waktu: 0 ms\n");
-    for (int j=0; j<n; j++){
-        printf("TP%d: %d,", j, waktu_proses[j]);
-    }
-    printf("Proses ke-0 masuk antrian\n--------------------------------\n");
-    int done = 0;
-    i = 0;
-    time = 0;
-    while (done < n){
-        if (sisa_waktu[i] == 0){
-            if (i == n-1){
-                i = 0;
+
+    for (i=0; i<proses; i++) {
+        input[i][0] = i;
+        for (j=1; j<3; j++) {
+            if (j==1){
+                printf("\nWaktu kedatangan P%d: ", i);
             }
             else {
-                i += 1;
+                printf("Waktu eksekusi P%d: ", i);
             }
+            scanf("%d", &input[i][j]);
         }
-        else {
-            int k = i+1;
-            while (time <= waktu_kedatangan[k] && waktu_kedatangan[k] <= time+kuantum){
-                printf("Waktu: %d ms\n", waktu_kedatangan[k]);
-                for (int j=0; j<n; j++){
-                    if (j==i){
-                        printf("TP%d: %d,", j, waktu_proses[i]+waktu_kedatangan[k]-time);
-                    }
-                    else {
-                        printf("TP%d: %d,", j, waktu_proses[j]);
-                    }
+    }
+
+    for (i=0; i<proses; i++) {
+        if (input[i][1] == 0) {
+            for (j=0; j<proses; j++) {
+                if (antrian[j] == -1) {
+                    antrian[j] = input[i][0];
+
+                    currentInput += 1;
+
+                    break;
                 }
-                printf("Proses ke-%d masuk antrian\n--------------------------------\n", k);
-                k += 1;
-            }
-            if (sisa_waktu[i] <= kuantum && sisa_waktu[i] > 0){
-                time = time + sisa_waktu[i];
-                waktu_proses[i] += sisa_waktu[i];
-                sisa_waktu[i] = 0;
-                printf("Waktu: %d ms\n", time);
-                for (int j=0; j<n; j++){
-                    printf("TP%d: %d,", j, waktu_proses[j]);
-                }
-                printf("Proses ke-%d selesai\n--------------------------------\n", i);
-                done += 1;
-            }
-            else if (sisa_waktu[i] > 0){
-                time = time + kuantum;
-                waktu_proses[i] += kuantum;
-                sisa_waktu[i] -= kuantum;
-                printf("Waktu: %d ms\n", time);
-                for (int j=0; j<n; j++){
-                    printf("TP%d: %d,", j, waktu_proses[j]);
-                }
-                printf("Proses ke-%d diantrikan kembali\n--------------------------------\n", i);
             }
 
-            if (i == n-1){
-                i = 0;
+        }
+
+    printf("\nWaktu = %d \n", waktu);
+
+    printf("Antrian: ");
+    for (i=0; i<proses; i++) {
+            if (antrian[i] != -1) {
+           printf("P%d ", antrian[i]);
+            }
+    }
+
+    printf("\nProses \t\t| Waktu Datang \t| Waktu Sisa \n");
+    for (i=0; i<proses; i++) {
+        for (j=0; j<3; j++) {
+            if (j==0){
+                printf("P%d ", input[i][j]);
             }
             else {
-                i += 1;
+                printf(" %d ", input[i][j]);
+            }
+            if (j != 2){
+                printf("\t\t|");
             }
         }
+        printf("\n");
     }
-    return 0;
+
+   if (antrian[0] == -1 && currentInput == proses-1) {
+        end = 1;
+    }
+    printf("\n");
+    }
+
+
+    while (!end) {
+        int index = antrian[0];
+        int durasi = input[index][2];
+
+        int a = nextQuantum;
+        int b = input[index][2] + waktu;
+
+        int p;
+
+        int c;
+        if (currentInput >= proses-1) {
+            c = 99999;
+            p = 0;
+        }
+        else {
+            c = input[currentInput+1][1];
+            p = input[currentInput+1][0];
+        }
+
+        if (a < b && a < c) {
+            // Pengurangan waktu proses
+            input[index][2] -= (nextQuantum - waktu);
+            // update waktu
+            waktu = nextQuantum;
+            // update nextQuantum
+            nextQuantum += quantum;
+            // Geser proses
+            int pindah = antrian[0];
+            for (i=0; i<proses; i++) {
+                if (antrian[i+1] == -1) {
+                    antrian[i] = pindah;
+                    break;
+                }
+                else {
+                    antrian[i] = antrian[i+1];
+                }
+            }
+        }
+
+        else if (b <= a && b < c){
+            input[index][2] = 0;
+            waktu += durasi;
+            nextQuantum = waktu + quantum;
+
+            for (i=0; i<proses; i++) {
+                if ((antrian[i+1] == -1) || (i == proses-1)) {
+                    antrian[i] = -1;
+                    break;
+                }
+                else {
+                    antrian[i] = antrian[i+1];
+                }
+            }
+        }
+
+        else {
+            input[index][2] -= (c - waktu); /*waktu proses dikurang*/
+            waktu = c;
+
+            for (i=0; i<proses; i++) {
+                if (antrian[i] == -1) {
+                    antrian[i] = p;
+
+                    currentInput += 1;
+                    break;
+                }
+            }
+        }
+
+        printf("Waktu = %d \n", waktu);
+
+        printf("Antrian: ");
+        for (i=0; i<proses; i++) {
+                if (antrian[i] != -1) {
+               printf("P%d ", antrian[i]);
+                }
+        }
+
+        printf("\nProses \t\t| Waktu Datang \t| Waktu Sisa \n");
+        for (i=0; i<proses; i++) {
+            for (j=0; j<3; j++) {
+                if (j==0){
+                    printf("P%d ", input[i][j]);
+                }
+                else {
+                    printf(" %d ", input[i][j]);
+                }
+                if (j != 2){
+                    printf("\t\t|");
+                }
+            }
+            printf("\n");
+        }
+
+        if (antrian[0] == -1 && currentInput == proses-1) {
+            end = 1;
+        }
+        printf("\n");
+    }
+
+	return 0;
 }
